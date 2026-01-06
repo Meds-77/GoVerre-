@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoVerre - Dashboard Admin V2</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+        }
+
+        .header-left h1 {
+            font-size: 2em;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+
+        .header-left p {
+            color: #aaa;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #43A047;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .btn-secondary.active {
+            background: #4CAF50;
+            border-color: #4CAF50;
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #4CAF50;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .stat-label {
+            color: #aaa;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+
+        .funnel-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .funnel-section h3 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .funnel {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .funnel-step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .funnel-bar-container {
+            flex: 1;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            height: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .funnel-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            border-radius: 8px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 15px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .funnel-label {
+            width: 200px;
+            color: #ddd;
+            font-size: 0.9em;
+        }
+
+        .funnel-percent {
+            width: 60px;
+            text-align: right;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .funnel-drop {
+            color: #F44336;
+            font-size: 0.8em;
+            width: 80px;
+            text-align: right;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .chart-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .chart-card h3 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 280px;
+        }
+
+        .cities-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .cities-section h3 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .city-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .city-name {
+            font-weight: 500;
+        }
+
+        .city-count {
+            background: #4CAF50;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .comments-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .comments-section h3 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .comment-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .comment-text {
+            color: #ddd;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .comment-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85em;
+            color: #888;
+        }
+
+        .no-comments {
+            color: #888;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .responses-table {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            overflow-x: auto;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .table-header h3 {
+            color: #4CAF50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-box {
+            padding: 10px 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            color: white;
+            width: 250px;
+        }
+
+        .search-box::placeholder {
+            color: #888;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        th {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+        }
+
+        .badge-green {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+        }
+
+        .badge-orange {
+            background: rgba(255, 152, 0, 0.3);
+            color: #FF9800;
+        }
+
+        .badge-red {
+            background: rgba(244, 67, 54, 0.3);
+            color: #F44336;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #aaa;
+        }
+
+        .last-update {
+            color: #888;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+
+        .cross-analysis {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .cross-analysis h3 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .insight-card {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .insight-title {
+            color: #4CAF50;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .insight-text {
+            color: #ddd;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .funnel-label {
+                width: 120px;
+                font-size: 0.8em;
+            }
+
+            .header-left h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <h1>📊 GoVerre Dashboard</h1>
+                <p>Tableau de bord des réponses au sondage</p>
+                <p class="last-update" id="last-update">Dernière mise à jour: -</p>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary" onclick="loadData()">🔄 Actualiser</button>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-number" id="total-responses">-</div>
+                <div class="stat-label">Réponses totales</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completed-responses">-</div>
+                <div class="stat-label">Complétés</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completion-rate">-</div>
+                <div class="stat-label">Taux complétion</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="interested-percent">-</div>
+                <div class="stat-label">% Intéressés</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="willing-to-pay">-</div>
+                <div class="stat-label">% Prêts à payer</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avg-age">-</div>
+                <div class="stat-label">Âge moyen</div>
+            </div>
+        </div>
+
+        <div class="funnel-section">
+            <h3>📉 Funnel de conversion</h3>
+            <div class="funnel" id="funnel-container"></div>
+        </div>
+
+        <div class="cross-analysis">
+            <h3>💡 Insights clés</h3>
+            <div id="insights-container"></div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>👥 Répartition par sexe</h3>
+                <div class="chart-container">
+                    <canvas id="sexeChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>📅 Répartition par âge</h3>
+                <div class="chart-container">
+                    <canvas id="ageChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>💚 Intérêt pour le service</h3>
+                <div class="chart-container">
+                    <canvas id="interestChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>💰 Prêt à payer 4€</h3>
+                <div class="chart-container">
+                    <canvas id="payChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>📦 Niveau de consommation</h3>
+                <div class="chart-container">
+                    <canvas id="volumeChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>📈 Réponses par jour</h3>
+                <div class="chart-container">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="cities-section">
+            <h3>🗺️ Top des villes</h3>
+            <div class="cities-grid" id="cities-container"></div>
+        </div>
+
+        <div class="comments-section">
+            <h3>💬 Commentaires des répondants</h3>
+            <div id="comments-container"></div>
+        </div>
+
+        <div class="responses-table">
+            <div class="table-header">
+                <h3>📋 Toutes les réponses</h3>
+                <input type="text" class="search-box" placeholder="🔍 Rechercher..." id="search-input" onkeyup="filterTable()">
+            </div>
+            <table id="responses-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Âge</th>
+                        <th>Sexe</th>
+                        <th>Ville</th>
+                        <th>Stockage</th>
+                        <th>Encombré</th>
+                        <th>Intérêt</th>
+                        <th>Prêt à payer</th>
+                        <th>Consommation</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody id="responses-tbody">
+                    <tr>
+                        <td colspan="10" class="loading">Chargement des données...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const binId = '695ca60d43b1c97be91c5abb';
+        const apiKey = '$2a$10$lI9UHnfxnehtzoSEe1tdcuf9o0N50mkuc0Mdo90Lfu2.h4AAF8HqG';
+        
+        let charts = {};
+        let allResponses = [];
+
+        const labels = {
+            sexe: { homme: 'Homme', femme: 'Femme', non_binaire: 'Non-binaire', autre: 'Autre', non_precise: 'Non précisé' },
+            stockage: { oui: 'Oui', parfois: 'Parfois', non: 'Non' },
+            encombrement: { beaucoup: 'Très encombrant', un_peu: 'Un peu', non: 'Non' },
+            interet: { tres_interesse: 'Très intéressé', interesse: 'Intéressé', non: 'Non' },
+            payer: { oui: 'Oui', peut_etre: 'Peut-être', non: 'Non' },
+            volume: { grande: 'Grande', moderee: 'Modérée', petite: 'Petite', occasionnel: 'Occasionnel' }
+        };
+
+        async function loadData() {
+            try {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+                    method: 'GET',
+                    headers: { 'X-Master-Key': apiKey }
+                });
+                
+                const result = await response.json();
+                allResponses = result.record?.responses || [];
+                
+                document.getElementById('last-update').textContent = 
+                    'Dernière mise à jour: ' + new Date().toLocaleString('fr-FR');
+                
+                updateDashboard(allResponses);
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('responses-tbody').innerHTML = 
+                    '<tr><td colspan="10" class="loading">Erreur de chargement. Réessayez.</td></tr>';
+            }
+        }
+
+        function updateDashboard(responses) {
+            updateStats(responses);
+            updateFunnel(responses);
+            updateInsights(responses);
+            updateCharts(responses);
+            updateCities(responses);
+            updateComments(responses);
+            updateTable(responses);
+        }
+
+        function updateStats(responses) {
+            const total = responses.length;
+            const completed = responses.filter(r => r.completed).length;
+            const completionRate = total > 0 ? Math.round(completed / total * 100) : 0;
+            const interested = responses.filter(r => r.interet_service && r.interet_service !== 'non').length;
+            const willingToPay = responses.filter(r => r.pret_a_payer === 'oui').length;
+            const ages = responses.filter(r => r.age).map(r => parseInt(r.age));
+            const avgAge = ages.length > 0 ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : '-';
+
+            document.getElementById('total-responses').textContent = total;
+            document.getElementById('completed-responses').textContent = completed;
+            document.getElementById('completion-rate').textContent = completionRate + '%';
+            document.getElementById('interested-percent').textContent = total > 0 ? Math.round(interested / total * 100) + '%' : '-';
+            document.getElementById('willing-to-pay').textContent = interested > 0 ? Math.round(willingToPay / interested * 100) + '%' : '-';
+            document.getElementById('avg-age').textContent = avgAge !== '-' ? avgAge + ' ans' : '-';
+        }
+
+        function updateFunnel(responses) {
+            const total = responses.length;
+            const hasStorage = responses.filter(r => r.stockage_verre && r.stockage_verre !== 'non').length;
+            const isEncumbered = responses.filter(r => r.encombrement && r.encombrement !== 'non').length;
+            const isInterested = responses.filter(r => r.interet_service && r.interet_service !== 'non').length;
+            const willingToPay = responses.filter(r => r.pret_a_payer === 'oui' || r.pret_a_payer === 'peut_etre').length;
+            const completed = responses.filter(r => r.completed).length;
+
+            const steps = [
+                { label: 'Ont commencé le sondage', count: total, percent: 100 },
+                { label: 'Stockent du verre', count: hasStorage, percent: total > 0 ? (hasStorage/total*100) : 0 },
+                { label: 'Sont encombrés', count: isEncumbered, percent: total > 0 ? (isEncumbered/total*100) : 0 },
+                { label: 'Intéressés par le service', count: isInterested, percent: total > 0 ? (isInterested/total*100) : 0 },
+                { label: 'Prêts à payer (Oui/Peut-être)', count: willingToPay, percent: total > 0 ? (willingToPay/total*100) : 0 },
+                { label: 'Ont terminé le sondage', count: completed, percent: total > 0 ? (completed/total*100) : 0 }
+            ];
+
+            const container = document.getElementById('funnel-container');
+            container.innerHTML = steps.map((step, i) => {
+                const drop = i > 0 ? steps[i-1].count - step.count : 0;
+                const dropPercent = i > 0 && steps[i-1].count > 0 ? Math.round(drop / steps[i-1].count * 100) : 0;
+                
+                return `
+                    <div class="funnel-step">
+                        <div class="funnel-label">${step.label}</div>
+                        <div class="funnel-bar-container">
+                            <div class="funnel-bar" style="width: ${Math.max(step.percent, 5)}%">${step.count}</div>
+                        </div>
+                        <div class="funnel-percent">${Math.round(step.percent)}%</div>
+                        <div class="funnel-drop">${i > 0 ? '-' + drop + ' (' + dropPercent + '%)' : ''}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateInsights(responses) {
+            const insights = [];
+            
+            if (responses.length === 0) {
+                document.getElementById('insights-container').innerHTML = 
+                    '<p style="color: #888;">Pas assez de données pour générer des insights.</p>';
+                return;
+            }
+
+            const ageGroups = {};
+            responses.filter(r => r.age && r.interet_service && r.interet_service !== 'non').forEach(r => {
+                const age = parseInt(r.age);
+                let group = age < 26 ? '18-25' : age < 36 ? '26-35' : age < 46 ? '36-45' : age < 56 ? '46-55' : '55+';
+                ageGroups[group] = (ageGroups[group] || 0) + 1;
+            });
+            
+            const topAgeGroup = Object.entries(ageGroups).sort((a, b) => b[1] - a[1])[0];
+            if (topAgeGroup) {
+                insights.push({
+                    title: '🎯 Cible principale',
+                    text: `Les ${topAgeGroup[0]} ans sont les plus intéressés (${topAgeGroup[1]} personnes)`
+                });
+            }
+
+            const genderCount = countBy(responses.filter(r => r.sexe), 'sexe');
+            const topGender = Object.entries(genderCount).sort((a, b) => b[1] - a[1])[0];
+            if (topGender) {
+                const genderLabel = labels.sexe[topGender[0]] || topGender[0];
+                const percent = Math.round(topGender[1] / responses.length * 100);
+                insights.push({
+                    title: '👥 Genre majoritaire',
+                    text: `${percent}% des répondants sont des ${genderLabel}s`
+                });
+            }
+
+            const interested = responses.filter(r => r.interet_service && r.interet_service !== 'non').length;
+            const willingToPay = responses.filter(r => r.pret_a_payer === 'oui').length;
+            if (interested > 0) {
+                const conversionRate = Math.round(willingToPay / interested * 100);
+                insights.push({
+                    title: '💰 Conversion',
+                    text: `${conversionRate}% des personnes intéressées sont prêtes à payer 4€`
+                });
+            }
+
+            const volumeCount = countBy(responses.filter(r => r.volume), 'volume');
+            const topVolume = Object.entries(volumeCount).sort((a, b) => b[1] - a[1])[0];
+            if (topVolume) {
+                const volumeLabel = labels.volume[topVolume[0]] || topVolume[0];
+                insights.push({
+                    title: '📦 Consommation type',
+                    text: `La majorité a une consommation "${volumeLabel.toLowerCase()}"`
+                });
+            }
+
+            document.getElementById('insights-container').innerHTML = insights.map(i => `
+                <div class="insight-card">
+                    <div class="insight-title">${i.title}</div>
+                    <div class="insight-text">${i.text}</div>
+                </div>
+            `).join('');
+        }
+
+        function updateCharts(responses) {
+            updateChart('sexeChart', 'doughnut', countBy(responses.filter(r => r.sexe), 'sexe'), labels.sexe);
+            updateAgeChart(responses);
+            updateChart('interestChart', 'doughnut', countBy(responses.filter(r => r.interet_service), 'interet_service'), labels.interet);
+            updateChart('payChart', 'doughnut', countBy(responses.filter(r => r.pret_a_payer), 'pret_a_payer'), labels.payer);
+            updateChart('volumeChart', 'bar', countBy(responses.filter(r => r.volume), 'volume'), labels.volume);
+            updateTimelineChart(responses);
+        }
+
+        function countBy(arr, key) {
+            return arr.reduce((acc, item) => {
+                const val = item[key];
+                if (val) acc[val] = (acc[val] || 0) + 1;
+                return acc;
+            }, {});
+        }
+
+        function updateChart(canvasId, type, data, labelMap) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            if (charts[canvasId]) charts[canvasId].destroy();
+
+            const keys = Object.keys(data);
+            const values = Object.values(data);
+            const displayLabels = keys.map(k => labelMap[k] || k);
+            const colors = ['#4CAF50', '#8BC34A', '#CDDC39', '#FFC107', '#FF9800', '#FF5722'];
+
+            charts[canvasId] = new Chart(ctx, {
+                type: type,
+                data: {
+                    labels: displayLabels,
+                    datasets: [{ data: values, backgroundColor: colors.slice(0, keys.length), borderColor: 'rgba(255,255,255,0.2)', borderWidth: 2 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: type === 'doughnut' ? 'bottom' : 'top', labels: { color: '#fff' } } },
+                    scales: type === 'bar' ? {
+                        y: { beginAtZero: true, ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        x: { ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    } : {}
+                }
+            });
+        }
+
+        function updateAgeChart(responses) {
+            const ctx = document.getElementById('ageChart').getContext('2d');
+            if (charts['ageChart']) charts['ageChart'].destroy();
+
+            const ageRanges = { '18-25': 0, '26-35': 0, '36-45': 0, '46-55': 0, '56-65': 0, '65+': 0 };
+            responses.forEach(r => {
+                const age = parseInt(r.age);
+                if (age >= 18 && age <= 25) ageRanges['18-25']++;
+                else if (age <= 35) ageRanges['26-35']++;
+                else if (age <= 45) ageRanges['36-45']++;
+                else if (age <= 55) ageRanges['46-55']++;
+                else if (age <= 65) ageRanges['56-65']++;
+                else if (age > 65) ageRanges['65+']++;
+            });
+
+            charts['ageChart'] = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: Object.keys(ageRanges), datasets: [{ label: 'Nombre', data: Object.values(ageRanges), backgroundColor: '#4CAF50', borderColor: '#43A047', borderWidth: 2 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.1)' } }, x: { ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.1)' } } } }
+            });
+        }
+
+        function updateTimelineChart(responses) {
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            if (charts['timelineChart']) charts['timelineChart'].destroy();
+
+            const dateCount = {};
+            responses.forEach(r => {
+                if (r.timestamp) {
+                    const date = new Date(r.timestamp).toLocaleDateString('fr-FR');
+                    dateCount[date] = (dateCount[date] || 0) + 1;
+                }
+            });
+
+            const sortedDates = Object.keys(dateCount).sort((a, b) => {
+                const [dayA, monthA, yearA] = a.split('/');
+                const [dayB, monthB, yearB] = b.split('/');
+                return new Date(yearA, monthA - 1, dayA) - new Date(yearB, monthB - 1, dayB);
+            });
+
+            charts['timelineChart'] = new Chart(ctx, {
+                type: 'line',
+                data: { labels: sortedDates.slice(-14), datasets: [{ label: 'Réponses', data: sortedDates.slice(-14).map(d => dateCount[d]), borderColor: '#4CAF50', backgroundColor: 'rgba(76, 175, 80, 0.2)', fill: true, tension: 0.4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.1)' } }, x: { ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.1)' } } } }
+            });
+        }
+
+        function updateCities(responses) {
+            const cityCount = {};
+            responses.forEach(r => {
+                if (r.ville && r.ville.trim()) {
+                    const city = r.ville.trim().toUpperCase();
+                    cityCount[city] = (cityCount[city] || 0) + 1;
+                }
+            });
+
+            const sortedCities = Object.entries(cityCount).sort((a, b) => b[1] - a[1]).slice(0, 12);
+            const container = document.getElementById('cities-container');
+            
+            if (sortedCities.length === 0) {
+                container.innerHTML = '<p style="color: #888;">Aucune ville renseignée</p>';
+                return;
+            }
+
+            container.innerHTML = sortedCities.map(([city, count]) => `
+                <div class="city-card">
+                    <span class="city-name">📍 ${city}</span>
+                    <span class="city-count">${count}</span>
+                </div>
+            `).join('');
+        }
+
+        function updateComments(responses) {
+            const comments = responses.filter(r => r.commentaire && r.commentaire.trim()).map(r => ({
+                text: r.commentaire,
+                age: r.age,
+                ville: r.ville,
+                date: r.timestamp ? new Date(r.timestamp).toLocaleDateString('fr-FR') : '-'
+            }));
+
+            const container = document.getElementById('comments-container');
+            
+            if (comments.length === 0) {
+                container.innerHTML = '<p class="no-comments">Aucun commentaire pour le moment</p>';
+                return;
+            }
+
+            container.innerHTML = comments.map(c => `
+                <div class="comment-card">
+                    <div class="comment-text">"${c.text}"</div>
+                    <div class="comment-meta">
+                        <span>📅 ${c.date}</span>
+                        ${c.age ? `<span>👤 ${c.age} ans</span>` : ''}
+                        ${c.ville ? `<span>📍 ${c.ville}</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateTable(responses) {
+            const tbody = document.getElementById('responses-tbody');
+            
+            if (responses.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" class="loading">Aucune réponse</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = [...responses].reverse().map(r => {
+                const date = r.timestamp ? new Date(r.timestamp).toLocaleDateString('fr-FR') : '-';
+                return `<tr>
+                    <td>${date}</td>
+                    <td>${r.age || '-'}</td>
+                    <td>${labels.sexe[r.sexe] || r.sexe || '-'}</td>
+                    <td>${r.ville || '-'}</td>
+                    <td>${labels.stockage[r.stockage_verre] || r.stockage_verre || '-'}</td>
+                    <td>${labels.encombrement[r.encombrement] || r.encombrement || '-'}</td>
+                    <td>${labels.interet[r.interet_service] || r.interet_service || '-'}</td>
+                    <td>${labels.payer[r.pret_a_payer] || r.pret_a_payer || '-'}</td>
+                    <td>${labels.volume[r.volume] || r.volume || '-'}</td>
+                    <td>${r.completed ? '<span class="badge badge-green">Complété</span>' : '<span class="badge badge-orange">Incomplet</span>'}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function filterTable() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const rows = document.querySelectorAll('#responses-tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(search) ? '' : 'none';
+            });
+        }
+
+        loadData();
+        setInterval(loadData, 30000);
+    </script>
+</body>
+</html>
